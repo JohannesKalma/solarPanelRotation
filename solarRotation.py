@@ -2,9 +2,41 @@ from datetime import datetime
 import time
 import sys
 
+import requests
+import os
+
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=".env")
+
+# API-sleutel ophalen
+# Ga naar https://weerlive.nl/api/ en registreer je voor een gratis API-sleutel.
+api_sleutel = os.getenv("WEERLIVE_API_KEY")
+
+# Plaatsnaam opgeven
+plaatsnaam = os.getenv("WEERLIVE_LOCATIE")
+
+# URL van de API samenstellen
+url = f"https://weerlive.nl/api/json-data-10min.php?key={api_sleutel}&locatie={plaatsnaam}"
+
+# HTTP-request uitvoeren
+response = requests.get(url)
+
+# Controleer de statuscode
+if response.status_code == 200:
+    # De request is gelukt
+    data = response.json()["liveweer"][0]
+    tsup=data["sup"]
+    tsunder=data["sunder"]
+    #print(data)
+    plaats=data["plaats"]
+    print(f"sunrise {tsup} sunset {tsunder} in {plaats}")
+else:
+    # De request is mislukt
+    print(f"Fout bij het ophalen van de weersgegevens: {response.status_code}")
+
 # deze waardes ophalen van een api service (zoals weerlive[knmi] of openweathermap)
-time_sunrise = "07:54".split(":")
-time_sunset = "17:15".split(":")
+time_sunrise = tsup.split(":")
+time_sunset = tsunder.split(":")
 
 # epoch waardes (secondes sinds 1-1-1970) berekenen voor zonsopkomst, zonsondergang, 
 # sommige api's doen dat overigens als, hoef je het hier niet nog een keer te doen natuurlijk
